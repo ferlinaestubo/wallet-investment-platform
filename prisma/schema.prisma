@@ -1,89 +1,54 @@
-generator client {
-  provider = "prisma-client-js"
-}
-
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
-enum AccountType {
-  USER_CASH
-  USER_WITHDRAW_HOLD
-  PROVIDER_CLEARING
-  FEES
+generator client {
+  provider = "prisma-client-js"
 }
 
+model Wallet {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  balance   Int      @default(0)
+  currency  String   @default("PHP")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transactions Transaction[]
+}
+
+model Transaction {
+  id        String   @id @default(cuid())
+  walletId  String
+  type      TxType
+  amount    Int
+  status    TxStatus @default(SUCCESS)
+  reference String?  @unique
+  note      String?
+  createdAt DateTime @default(now())
+
+  wallet Wallet @relation(fields: [walletId], references: [id], onDelete: Cascade)
+
+  @@index([walletId, createdAt])
+}
 enum TxType {
   DEPOSIT
   WITHDRAW
 }
 
 enum TxStatus {
-  CREATED
-  PENDING_PROVIDER
-  HOLD_PLACED
-  SENT_TO_PROVIDER
-  SUCCEEDED
+  PENDING
+  SUCCESS
   FAILED
 }
-
 model User {
   id        String   @id @default(cuid())
   email     String   @unique
+  password  String
   createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  accounts  WalletAccount[]
-  txs       Transaction[]
+  wallet Wallet?
 }
-
-model WalletAccount {
-  id        String      @id @default(cuid())
-  userId    String?
-  type      AccountType
-  currency  String      @default("PHP")
-  createdAt DateTime    @default(now())
-
-  user      User?       @relation(fields: [userId], references: [id])
-  debitEntries  LedgerEntry[] @relation("debitEntries")
-  creditEntries LedgerEntry[] @relation("creditEntries")
-
-  @@index([userId, type])
-}
-
-model Transaction {
-  id             String   @id @default(cuid())
-  userId         String
-  type           TxType
-  status         TxStatus @default(CREATED)
-  amount         Decimal  @db.Decimal(18,2)
-  currency       String   @default("PHP")
-  idempotencyKey String?  @unique
-  providerRef    String?
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
-
-  user          User       @relation(fields: [userId], references: [id])
-  ledgerEntries LedgerEntry[]
-
-  @@index([userId, createdAt])
-  @@index([providerRef])
-}
-
-model LedgerEntry {
-  id              String   @id @default(cuid())
-  txId            String
-  debitAccountId  String
-  creditAccountId String
-  amount          Decimal  @db.Decimal(18,2)
-  currency        String   @default("PHP")
-  createdAt       DateTime @default(now())
-
-  tx            Transaction   @relation(fields: [txId], references: [id])
-  debitAccount  WalletAccount @relation("debitEntries", fields: [debitAccountId], references: [id])
-  creditAccount WalletAccount @relation("creditEntries", fields: [creditAccountId], references: [id])
-
-  @@index([txId])
-  @@unique([txId, debitAccountId, creditAccountId, amount, currency])
-}
-
