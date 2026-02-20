@@ -1,16 +1,25 @@
-import { Injectable } from '@nestjs/common';
-import { PrismaService } from 'src/prisma/prisma.service';
+import { Injectable, BadRequestException } from '@nestjs/common';
+import { PrismaService } from '../prisma/prisma.service';
+import { CreateWalletDto } from './dto/create-wallet.dto';
 
 @Injectable()
 export class WalletService {
   constructor(private prisma: PrismaService) {}
 
-  async createWallet(userId: string) {
-    return this.prisma.wallet.create({
-      data: {
-        userId,
-      },
-    });
+  async create(dto: CreateWalletDto) {
+    try {
+      return await this.prisma.wallet.create({
+        data: {
+          userId: dto.userId,
+          currency: dto.currency,
+        },
+      });
+    } catch (err: any) {
+      if (err?.code === 'P2002') {
+        throw new BadRequestException('Wallet already exists for this user.');
+      }
+      throw err;
+    }
   }
 
   async getWallet(userId: string) {
@@ -19,4 +28,3 @@ export class WalletService {
     });
   }
 }
-
