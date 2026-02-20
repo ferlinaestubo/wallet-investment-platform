@@ -9,7 +9,7 @@
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "node dist/main.js",
-    "postinstall": "echo Skip Prisma",
+    "postinstall": "prisma generate"
     "prisma:generate": "prisma generate",
     "start:dev": "nest start --watch",
     "start:debug": "nest start --debug --watch",
