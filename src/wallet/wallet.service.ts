@@ -29,11 +29,12 @@ export class WalletService {
   }
 
   // ✅ for POST /wallet/test-wallet
-  async createTestWallet(name = 'Test Wallet') {
-    return this.prisma.wallet.create({
-      data: {
-        name,
-      },
-    });
-  }
+  async createTestWallet() {
+  return this.prisma.wallet.create({
+    data: {
+      userId: `test_${Date.now()}`,
+      currency: 'PHP',
+    },
+  });
 }
+

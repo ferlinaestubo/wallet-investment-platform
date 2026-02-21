@@ -6,8 +6,9 @@ export class WalletController {
   constructor(private readonly walletService: WalletService) {}
 
   @Post('test-wallet')
-  async createTestWallet(@Body() body: { name?: string }) {
-    const wallet = await this.walletService.createTestWallet(body?.name);
-    return { ok: true, wallet };
-  }
+async testWallet() {
+  const wallet = await this.walletService.createTestWallet();
+  return { ok: true, wallet };
+}
+
 }
