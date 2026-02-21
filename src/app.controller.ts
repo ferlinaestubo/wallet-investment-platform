@@ -1,9 +1,13 @@
 import { Controller, Get } from '@nestjs/common';
 import { AppService } from './app.service';
+import { PrismaService } from './prisma/prisma.service';
 
 @Controller()
 export class AppController {
-  constructor(private readonly appService: AppService) {}
+  constructor(
+    private readonly appService: AppService,
+    private readonly prisma: PrismaService,
+  ) {}
 
   @Get()
   getHello(): string {
@@ -13,5 +17,12 @@ export class AppController {
   @Get('health')
   healthCheck() {
     return { status: 'ok' };
+  }
+
+  @Get('db')
+  async dbCheck() {
+    // Simple query to confirm DB connection
+    const walletCount = await this.prisma.wallet.count();
+    return { db: 'ok', walletCount };
   }
 }
