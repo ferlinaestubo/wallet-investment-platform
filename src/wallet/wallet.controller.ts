@@ -10,5 +10,13 @@ export class WalletController {
   create(@Body() dto: CreateWalletDto) {
     return this.walletService.create(dto);
   }
+@Post('test-wallet')
+async createTestWallet() {
+  return this.walletService.create({
+    userId: 'test-user-001',
+    currency: 'PHP',
+  });
+}
+
 }
 
