@@ -27,4 +27,13 @@ export class WalletService {
       where: { userId },
     });
   }
+
+  // ✅ for POST /wallet/test-wallet
+  async createTestWallet(name = 'Test Wallet') {
+    return this.prisma.wallet.create({
+      data: {
+        name,
+      },
+    });
+  }
 }

@@ -1,10 +1,13 @@
-import { Module } from '@nestjs/common';
-import { WalletController } from './wallet.controller';
+import { Body, Controller, Post } from '@nestjs/common';
 import { WalletService } from './wallet.service';
-import { PrismaService } from '../prisma/prisma.service';
 
-@Module({
-  controllers: [WalletController],
-  providers: [WalletService, PrismaService],
-})
-export class WalletModule {}
+@Controller('wallet')
+export class WalletController {
+  constructor(private readonly walletService: WalletService) {}
+
+  @Post('test-wallet')
+  async createTestWallet(@Body() body: { name?: string }) {
+    const wallet = await this.walletService.createTestWallet(body?.name);
+    return { ok: true, wallet };
+  }
+}
