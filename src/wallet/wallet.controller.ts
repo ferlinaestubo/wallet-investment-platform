@@ -22,9 +22,4 @@ export class WalletController {
     return this.walletService.withdraw(dto.userId, dto.amount);
   }
 
-  @Post('test-wallet')
-  async testWallet() {
-    const wallet = await this.walletService.createTestWallet();
-    return { ok: true, wallet };
-  }
 }
