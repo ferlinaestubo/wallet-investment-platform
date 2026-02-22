@@ -22,26 +22,69 @@ export class WalletService {
     }
   }
 
-  async getWallet(userId: string) {
+  async getByUserId(userId: string) {
     return this.prisma.wallet.findUnique({
       where: { userId },
     });
   }
 
-  async createTestWallet() {
-    const user = await this.prisma.user.findFirst();
+  // 👇 ADD DEPOSIT HERE
+  async deposit(userId: string, amount: number) {
+    const wallet = await this.prisma.wallet.findUnique({
+      where: { userId },
+    });
 
-    if (!user) {
-      throw new BadRequestException(
-        'No users found. Please create a user first.',
-      );
-    }
+    if (!wallet) throw new BadRequestException('Wallet not found');
 
-    return this.prisma.wallet.create({
-      data: {
-        userId: user.id,
-        currency: 'PHP',
-      },
+    return this.prisma.$transaction(async (tx) => {
+      const updatedWallet = await tx.wallet.update({
+        where: { id: wallet.id },
+        data: {
+          balance: { increment: amount },
+        },
+      });
+
+      await tx.transaction.create({
+        data: {
+          walletId: wallet.id,
+          type: 'DEPOSIT',
+          amount,
+          reference: `dep_${Date.now()}`,
+        },
+      });
+
+      return updatedWallet;
+    });
+  }
+
+  // 👇 ADD WITHDRAW HERE
+  async withdraw(userId: string, amount: number) {
+    const wallet = await this.prisma.wallet.findUnique({
+      where: { userId },
+    });
+
+    if (!wallet) throw new BadRequestException('Wallet not found');
+    if (wallet.balance < amount)
+      throw new BadRequestException('Insufficient balance');
+
+    return this.prisma.$transaction(async (tx) => {
+      const updatedWallet = await tx.wallet.update({
+        where: { id: wallet.id },
+        data: {
+          balance: { decrement: amount },
+        },
+      });
+
+      await tx.transaction.create({
+        data: {
+          walletId: wallet.id,
+          type: 'WITHDRAW',
+          amount,
+          reference: `wd_${Date.now()}`,
+        },
+      });
+
+      return updatedWallet;
     });
   }
 }
