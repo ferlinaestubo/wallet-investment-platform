@@ -28,18 +28,20 @@ export class WalletService {
     });
   }
 
-  // ✅ for POST /wallet/test-wallet
   async createTestWallet() {
-  const user = await this.prisma.user.findFirst();
+    const user = await this.prisma.user.findFirst();
 
-  if (!user) {
-    throw new BadRequestException('No users found. Please create a user first.');
+    if (!user) {
+      throw new BadRequestException(
+        'No users found. Please create a user first.',
+      );
+    }
+
+    return this.prisma.wallet.create({
+      data: {
+        userId: user.id,
+        currency: 'PHP',
+      },
+    });
   }
-
-  return this.prisma.wallet.create({
-    data: {
-      userId: user.id,
-      currency: 'PHP',
-    },
-  });
 }
