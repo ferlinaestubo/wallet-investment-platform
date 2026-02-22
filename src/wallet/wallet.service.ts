@@ -30,11 +30,16 @@ export class WalletService {
 
   // ✅ for POST /wallet/test-wallet
   async createTestWallet() {
-    return this.prisma.wallet.create({
-      data: {
-        userId: `test_${Date.now()}`,
-        currency: 'PHP',
-      },
-    });
+  const user = await this.prisma.user.findFirst();
+
+  if (!user) {
+    throw new BadRequestException('No users found. Please create a user first.');
   }
+
+  return this.prisma.wallet.create({
+    data: {
+      userId: user.id,
+      currency: 'PHP',
+    },
+  });
 }
