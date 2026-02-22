@@ -7,6 +7,13 @@ import { WithdrawDto } from './dto/withdraw.dto';
 export class WalletController {
   constructor(private readonly walletService: WalletService) {}
 
+  // ✅ ADD THIS FIRST (before :userId)
+  @Get(':userId/transactions')
+  getTransactions(@Param('userId') userId: string) {
+    return this.walletService.getTransactionsByUserId(userId);
+  }
+
+  // existing
   @Get(':userId')
   getWallet(@Param('userId') userId: string) {
     return this.walletService.getByUserId(userId);
@@ -21,5 +28,4 @@ export class WalletController {
   withdraw(@Body() dto: WithdrawDto) {
     return this.walletService.withdraw(dto.userId, dto.amount);
   }
-
 }

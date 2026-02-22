@@ -1,4 +1,4 @@
-import { Injectable, BadRequestException } from '@nestjs/common';
+import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateWalletDto } from './dto/create-wallet.dto';
 
@@ -85,6 +85,22 @@ export class WalletService {
       });
 
       return updatedWallet;
+    });
+  }
+async getTransactionsByUserId(userId: string) {
+    // optional: ensure user exists (or wallet exists)
+    const wallet = await this.prisma.wallet.findUnique({
+      where: { userId },
+      select: { id: true },
+    });
+
+    if (!wallet) {
+      throw new NotFoundException('Wallet not found for this user');
+    }
+
+    return this.prisma.transaction.findMany({
+      where: { walletId: wallet.id },
+      orderBy: { createdAt: 'desc' }, // newest first
     });
   }
 }
